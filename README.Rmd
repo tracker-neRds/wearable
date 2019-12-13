@@ -15,21 +15,22 @@ knitr::opts_chunk$set(
 )
 ```
 
-# fitbitr 
+# wearable
 
-![](https://travis-ci.org/teramonagi/fitbitr.svg?branch=master)
-[![CRAN Version](http://www.r-pkg.org/badges/version/fitbitr)](http://cran.rstudio.com/web/packages/fitbitr) 
-![](http://cranlogs.r-pkg.org/badges/grand-total/fitbitr)
+![](https://travis-ci.org/tracker-neRds/wearable.svg?branch=master)
+[![CRAN Version](http://www.r-pkg.org/badges/version/wearable)](http://cran.rstudio.com/web/packages/wearable) 
+![](http://cranlogs.r-pkg.org/badges/grand-total/wearable)
 
-`fitbitr` package allows users to interact with Fitbit data in R using Fitbit API.
+The `wearable` package allows users to interact with activity tracker data in R using device API.
 
-This package allows for most of the read and write methods that you might want to use. 
+Currently this package allows for read/write functionality for interacting with personal Fitbit data. 
+
 
 ## Installation
-fitbitr isn't available from CRAN yet, but you can get it from github with:
+wearable isn't available from CRAN yet, but you can get it from github with:
 ```{r, eval=FALSE}
 # install.packages("devtools")
-devtools::install_github("teramonagi/fitbitr")
+devtools::install_github("tracker-neRds/wearable")
 ```
 
 ## Preparation  
@@ -63,20 +64,20 @@ Sys.setenv(FITBIT_KEY = "<your-fitbit-key>", FITBIT_SECRET = "<your-firbit-secre
 
 ### Load libraries
 ```{r}
-library("fitbitr")
-library("ggplot2") # for visualization in this document
+library("wearable")
+library("tidyvserse") # for visualization in this document
 ```
 
 ### Get Fitbit API token
-You can get your Fitbit toekn using `fitbitr::oauth_token()`:
+You can get your Fitbit toekn using `wearable::oauth_token()`:
 ```{r, eval=FALSE}
 # Get token
-token <- fitbitr::oauth_token()
+token <- wearable::oauth_token()
 # Get token
-token <- fitbitr::oauth_token(language="en_US")
+token <- wearable::oauth_token(language="en_US")
 
 # Get token
-token <- fitbitr::oauth_token(language="en_GB")
+token <- wearable::oauth_token(language="en_GB")
 ```
 This function open a web browser autmatically and return Fitbit token.
 
@@ -206,15 +207,17 @@ get_alarms(token, tracker_id)
 You can find more details [here](https://dev.fitbit.com/docs/devices/).
 
 ## Contributing
-- Fork it ( https://github.com/teramonagi/fitbitr/fork )
+- Fork it ( https://github.com/teramonagi/wearable/fork )
 - Create your feature branch (git checkout -b my-new-feature)
 - Commit your changes (git commit -am 'Add some feature')
 - Push to the branch (git push origin my-new-feature)
 - Create a new Pull Request
 
 ## Acknowledgements
+This package has is based on extending and improving the [fitbitr](https://github.com/teramonagi/fitbitr/) package from [Nagi Teramo](https://github.com/teramonagi).
 
-Many thanks to Mr.dichika since This package is based on the extension of [myFitbit package](https://github.com/dichika/myFitbit).
+Additional thanks to dichika as the fitbitr package is based on the [myFitbit package](https://github.com/dichika/myFitbit).
+
 
 <!--
 Future implementation
