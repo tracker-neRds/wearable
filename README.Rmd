@@ -17,9 +17,9 @@ knitr::opts_chunk$set(
 
 # wearable
 
-<!-- ![](https://travis-ci.org/tracker-neRds/wearable.svg?branch=master) -->
-<!-- [![CRAN Version](http://www.r-pkg.org/badges/version/wearable)](http://cran.rstudio.com/web/packages/wearable)  -->
-<!-- ![](http://cranlogs.r-pkg.org/badges/grand-total/wearable) -->
+![](https://travis-ci.org/tracker-neRds/wearable.svg?branch=master)
+[![CRAN Version](http://www.r-pkg.org/badges/version/wearable)](http://cran.rstudio.com/web/packages/wearable)
+![](http://cranlogs.r-pkg.org/badges/grand-total/wearable)
 
 The `wearable` package allows users to interact with activity tracker data in R using device API.
 
@@ -207,7 +207,7 @@ Sys.setenv(FITBIT_KEY = "<your-fitbit-key>", FITBIT_SECRET = "<your-firbit-secre
 <!-- You can find more details [here](https://dev.fitbit.com/docs/devices/). -->
 
 <!-- ## Contributing -->
-<!-- - Fork it ( https://github.com/teramonagi/wearable/fork ) -->
+<!-- - Fork it ( https://github.com/tracker-neRds/wearable/fork ) -->
 <!-- - Create your feature branch (git checkout -b my-new-feature) -->
 <!-- - Commit your changes (git commit -am 'Add some feature') -->
 <!-- - Push to the branch (git push origin my-new-feature) -->
