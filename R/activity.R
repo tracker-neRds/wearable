@@ -1,4 +1,4 @@
-#' @include fitbitr.R
+#' @include wearable.R
 #' @include common.R
 # Constants
 url_activity <- paste0(url_api, "activities/")
