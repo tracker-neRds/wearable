@@ -1,5 +1,6 @@
 # Constants
-url_sleep <- paste0(url_api, "sleep/")
+# Note: this ignores the constants set in fitbit.r in favor of the 1.2 API
+url_sleep <- paste0("https://api.fitbit.com/1.2/", "user/-/", "sleep/")
 
 #' Get Sleep Logs
 #'
@@ -23,18 +24,25 @@ get_sleep_logs <- function(token, date)
   data <- get(url, token)
   data$sleep$dateOfSleep <- as.Date(data$sleep$dateOfSleep)
   data$sleep$startTime   <- to_posixct(data$sleep$startTime)
-  data$sleep$minuteData  <- lapply(data$sleep$minuteData, function(x){
-    x$value <- as.numeric(x$value)
-    date_time <- to_posixct(date, x$dateTime)
-    is_date_change <- Reduce(function(x, y){x || y!=1}, diff(date_time), FALSE, accumulate=TRUE)
-    x$dateTime <- date_time + lubridate::days(1)*is_date_change
-    x
-  })
-  sleep <- suppressWarnings(cbind(
-    dplyr::select(data$sleep, -minuteData),
-    dplyr::bind_rows(data$sleep$minuteData)
-  ))
-  list(sleep=sleep, summary=as.data.frame(data$summary))
+  # data$sleep$minuteData  <- lapply(data$sleep$minuteData, function(x){
+  #   x$value <- as.numeric(x$value)
+  #   date_time <- to_posixct(date, x$dateTime)
+  #   is_date_change <- Reduce(function(x, y){x || y!=1}, diff(date_time), FALSE, accumulate=TRUE)
+  #   x$dateTime <- date_time + lubridate::days(1)*is_date_change
+  #   x
+  # })
+  # sleep <- suppressWarnings(cbind(
+  #   dplyr::select(data$sleep, -minuteData),
+  #   dplyr::bind_rows(data$sleep$minuteData)
+  # ))
+  # Combine the short and long sleep level data into a single data frame
+  data$sleep$levels$merged <- list()
+  for (i in seq_along(nrow(data$sleep$levels))) {
+    data$sleep$levels$merged[[i]] <- merge_sleep_levels(data$sleep$levels$data[[i]],
+                                                        data$sleep$levels$data[[i]])
+  }
+  #list(sleep=sleep, summary=as.data.frame(data$summary))
+  data
 }
 
 #' Get Sleep Goal
@@ -146,3 +154,64 @@ delete_sleep_log <- function(token, log_id)
     delete(url=url, token)
   }
 }
+
+merge_sleep_levels <- function(long_data, short_data) {
+  long_data <- dplyr::mutate(long_data,
+                             start_time = lubridate::ymd_hms(dateTime),
+                             duration_s = lubridate::seconds(seconds))
+  short_data <- dplyr::mutate(short_data,
+                              start_time = lubridate::ymd_hms(dateTime),
+                              duration_s = lubridate::seconds(seconds))
+
+  # Build up a list of sleep levels, inserting short duration periods into long
+  # duration periods and adjusting as appropriate.
+  data_list <- list()
+  short_data_idx <- 1
+  long_data_idx <- 1
+
+  while(short_data_idx <= nrow(short_data)) {
+    current_short_stage_start <- short_data$start_time[short_data_idx]
+    if (current_short_stage_start < long_data$start_time[long_data_idx]) {
+      data_list[[length(data_list)+1]] <- short_data[short_data_idx, ]
+
+      # If the currenty inserted short stage interrupted the previously
+      # inserted long stage, adjust that entry
+      last_add <- data_list[[length(data_list) - 1]]
+      if (last_add$start_time + last_add$duration_s >
+          current_short_stage_start) {
+        data_list[[length(data_list) - 1]]$duration_s =
+          difftime(current_short_stage_start,
+                   last_add$start_time,
+                   units = "secs")
+
+        # Check if the previously inserted long stage continues after this short
+        # stage. If so, rewind the index but adjust its start time and duration
+        # as appropriate.
+        if (current_short_stage_start + short_data$duration_s[short_data_idx] <
+            long_data$start_time[long_data_idx]) {
+          long_data_idx <- long_data_idx - 1
+          orig_end_time = long_data$start_time[long_data_idx] +
+            long_data$duration_s[long_data_idx]
+
+          long_data$start_time[long_data_idx] <- current_short_stage_start +
+            short_data$duration_s[short_data_idx]
+          long_data$duration_s[long_data_idx] <- difftime(orig_end_time,
+                                                          long_data$start_time[long_data_idx],
+                                                          units = "secs")
+        }
+      }
+      short_data_idx <- short_data_idx + 1
+    } else {
+      if (long_data_idx <= nrow(long_data)) {
+        data_list[[length(data_list)+1]] <- long_data[long_data_idx, ]
+        long_data_idx <- long_data_idx + 1
+      }
+    }
+  }
+  data_list[[length(data_list)+1]] <- long_data[long_data_idx:nrow(long_data), ]
+  data_list <- apply(data_list,
+                     function(x) dplyr::mutate(x, duration_s = as.numeric(duration_s, units = "secs")))
+  merged_data <- dplyr::bind_rows(data_list)
+}
+
+
