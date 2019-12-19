@@ -78,6 +78,7 @@ sleep_30s <- tibble(dateTime = seq(sleep_start, sleep_end, by = '30 sec')) %>%
   )
   
 # check to see stage sums match summary values  
+
 sleep_30s %>% 
   group_by(sleep_stage) %>% 
   summarise(total = n()/2)
@@ -92,3 +93,25 @@ ggplot(sleep_30s, aes(dateTime, sleep_stage, color = factor(sleep_stage)))+
        y = "Sleep Stage",
        x = "Time"
        )
+
+# create numeric representation for short wakes
+sleep_30s <- sleep_30s %>% 
+  mutate(level = factor(level, levels= c("deep", "light", "rem", "wake"), ordered = TRUE),
+         short_level_num = case_when(short_level == "wake" ~ 4)) 
+
+# hypnogram attempt
+ggplot(sleep_30s, aes(dateTime, as.numeric(level))) +
+    geom_line(alpha = .75, linetype = "dashed") +
+    geom_point(aes(color = level)) +
+    scale_y_continuous(labels=c("1" = "Deep", "2" = "Light",
+                             "3" = "REM", "4" = "Awake")) +
+    geom_point(aes(dateTime, short_level_num), color = "yellow") +
+    theme_clean() +
+    theme(legend.position = "none") +
+    labs(title = "Fitbit Sleep Stages",
+         subtitle = "Data generated via Fitbit intraday API",
+         y = "Sleep Stage",
+         x = "Time")
+
+sleep_30s %>% 
+  mutate(level_num = as.numeric(sleep_stage))
